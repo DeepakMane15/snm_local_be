@@ -1,4 +1,4 @@
-import { SadhsangatDataModel } from "../models/sadhsangatDataModel";
+import { GetSadhsangatDataModel, SadhsangatDataModel } from "../models/sadhsangatDataModel";
 import db from "../db/knex"; // Adjust path to knex.ts
 import redisClient from "../config/redis";
 
@@ -41,8 +41,8 @@ const createSadhsangat = async (sadhsangatData: SadhsangatDataModel) => {
   );
 };
 
-const getSadhsangat = async (id: number) => {
-  const cacheKey = id ? `sadhsangat:${id}` : "sadhsangat:all";
+const getSadhsangat = async (unitNo: number) => {
+  const cacheKey = `sadhsangat:${unitNo}`;
 
   return new Promise((resolve, reject) => {
     redisClient.get(cacheKey, async (err, cachedData) => {
@@ -54,7 +54,7 @@ const getSadhsangat = async (id: number) => {
         try {
           let result: SadhsangatDataModel[];
           //   result = await db.raw(`CALL GetSadhsangat(?);`, [id]);
-          result = await db("sadhsangat").where({ unitNo: id });
+          result = await db("sadhsangat").where({ unitNo: unitNo });
           redisClient.setex(cacheKey, 3600, JSON.stringify(result)); // Cache for 1 hour
           resolve(result);
         } catch (error) {
@@ -69,7 +69,7 @@ const updateSadhsangat = async (
   id: number,
   updateData: Partial<SadhsangatDataModel>
 ) => {
-  const existingRecord = await getById(id);
+  const existingRecord = await isSadhsangatExists(id);
 
   if (!existingRecord) {
     return null;
@@ -77,10 +77,24 @@ const updateSadhsangat = async (
   return await db("sadhsangat").where({ id }).update(updateData);
 };
 
-const getById = async (id: number) => {
-  const record = await db("sadhsangat").where({ id }).first();
-  return record;
+const getSadhsangatById = async (id: number) => {
+    const record = await db("sadhsangat")
+    .select(
+      "sadhsangat.*",
+      "units_master.unitNo as unitNo",
+      "units_master.name as unitName"
+    )
+    .leftJoin("units_master", "sadhsangat.unitNo", "=", "units_master.id") // Join the units_master table on unitNo
+    .where("sadhsangat.id", id)
+    .first();
+
+  return record as GetSadhsangatDataModel;
 };
+
+const isSadhsangatExists = async (id: number) => {
+    const record = await db("sadhsangat").where({ id }).first();
+    return record;
+  };
 
 const deleteSadhsangat = async (id: number): Promise<boolean> => {
   const result = await db("sadhsangat").where("id", id).del();
@@ -91,6 +105,7 @@ const deleteSadhsangat = async (id: number): Promise<boolean> => {
 export default {
   createSadhsangat,
   getSadhsangat,
+  getSadhsangatById,
   updateSadhsangat,
   deleteSadhsangat,
 };

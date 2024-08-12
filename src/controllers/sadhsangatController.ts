@@ -24,6 +24,17 @@ const fetchSadhsangat = async (req: Request, res: Response) => {
     }
 };
 
+const fetchSadhsangatById = async (req: Request, res: Response) => {
+    try {
+        const id = parseInt(req.params.id, 10);
+        const result: any = await sadhsangatService.getSadhsangatById(id);
+        res.status(201).json({ message: 'Record fetched successfully', data: result});
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+};
+
 
 const updateSadhsangat = async (req: Request, res: Response) => {
     try {
@@ -59,5 +70,5 @@ const deleteSadhsangat = async (req: Request, res: Response) => {
 };
 
 export default {
-    createSadhsangat,fetchSadhsangat, updateSadhsangat, deleteSadhsangat
+    createSadhsangat,fetchSadhsangat, fetchSadhsangatById, updateSadhsangat, deleteSadhsangat
 };

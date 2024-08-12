@@ -14,3 +14,7 @@ export interface SadhsangatDataModel {
     bloodGroup: string;
 }
 
+export interface GetSadhsangatDataModel extends SadhsangatDataModel {
+    unitName: string;
+}
+
