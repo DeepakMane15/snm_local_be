@@ -36,6 +36,24 @@ const getSadhsangat = async (id: number) => {
     `, [id]);
 };
 
+const getById = async (id: number) => {
+    const record = await db('sadhsangat').where({ id }).first();
+    return record;
+};
+
+const update = async (id: number, updateData: Partial<SadhsangatDataModel>) => {
+    return await db('sadhsangat').where({ id }).update(updateData);
+};
+
+
+const deleteSadhsangat = async (id: number): Promise<boolean> => {
+    const result = await db('sadhsangat')
+        .where('id', id)
+        .del();
+
+    return result > 0;
+};
+
 export default {
-    insertSadhsangat,getSadhsangat
+    insertSadhsangat,getSadhsangat, getById, update, deleteSadhsangat
 };

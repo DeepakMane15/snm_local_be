@@ -11,8 +11,25 @@ const getSadhsangat = async (sadhsangatId: number) => {
     return await sadhsangatDataModel.getSadhsangat(sadhsangatId);
 };
 
+const updateSadhsangat = async (id: number, updateData: Partial<SadhsangatDataModel>) => {
+    const existingRecord = await sadhsangatDataModel.getById(id);
+
+    if (!existingRecord) {
+        return null;
+    }
+
+    // Update the record using the stored procedure or direct query
+    await sadhsangatDataModel.update(id, updateData);
+
+    return true;
+};
+
+
+const deleteSadhsangat = async (id: number): Promise<boolean> => {
+    return await sadhsangatDataModel.getSadhsangat(id);
+};
 
 
 export default {
-    createSadhsangat,getSadhsangat
+    createSadhsangat,getSadhsangat, updateSadhsangat, deleteSadhsangat
 };
