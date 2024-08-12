@@ -5,6 +5,7 @@ export async function up(knex: Knex): Promise<void> {
     return knex.raw(`
         CREATE PROCEDURE InsertIntoSadhsangat(
             IN _name VARCHAR(255),
+            IN _unitNo INT,
             IN _area VARCHAR(255),
             IN _address VARCHAR(255),
             IN _pincode VARCHAR(10),
@@ -20,11 +21,11 @@ export async function up(knex: Knex): Promise<void> {
         BEGIN
             INSERT INTO sadhsangat (
                 name, area, address, pincode, contactNo, gender, dob, age,
-                qualification, occupation, dateOfGyan, bloodGroup
+                qualification, occupation, dateOfGyan, bloodGroup, unitNo
             )
             VALUES (
                 _name, _area, _address, _pincode, _contactNo, _gender,
-                _dob, _age, _qualification, _occupation, _dateOfGyan, _bloodGroup
+                _dob, _age, _qualification, _occupation, _dateOfGyan, _bloodGroup, _unitNo
             );
         END;
 

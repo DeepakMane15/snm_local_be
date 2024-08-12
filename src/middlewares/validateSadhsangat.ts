@@ -3,6 +3,7 @@ import { Request, Response, NextFunction } from 'express';
 
 const validateSadhsangat = [
     body('name').isString().notEmpty().withMessage('Name is required'),
+    body('unitNo').isInt().notEmpty().withMessage('Unit No is required'),
     body('area').isString().notEmpty().withMessage('Area is required'),
     body('address').isString().notEmpty().withMessage('Address is required'),
     body('pincode').isLength({ min: 1 }).withMessage('Pincode is required'),
