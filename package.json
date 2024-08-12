@@ -21,11 +21,15 @@
     "typescript": "^5.5.4"
   },
   "dependencies": {
+    "@types/redis": "^4.0.11",
     "dotenv": "^16.4.5",
+    "ioredis": "^5.4.1",
     "knex": "^3.1.0",
     "mariadb": "^3.3.1",
     "mysql2": "^3.11.0",
+    "redis": "^4.7.0",
     "swagger-jsdoc": "^6.2.8",
-    "swagger-ui-express": "^5.0.1"
+    "swagger-ui-express": "^5.0.1",
+    "winston": "^3.14.1"
   }
 }

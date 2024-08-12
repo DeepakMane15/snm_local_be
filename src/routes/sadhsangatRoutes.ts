@@ -55,62 +55,62 @@ router.post(
   validateSadhsangat,
   sadhsangatController.createSadhsangat
 );
-
 /**
  * @swagger
- * /sadhsangat:
+ * /sadhsangat/{id}:
  *   get:
- *     summary: Get Sadhsangat records
+ *     summary: Get a specific Sadhsangat record by ID
  *     tags:
  *       - Sadhsangat
  *     parameters:
  *       - name: id
- *         in: query
- *         required: false
+ *         in: path
+ *         required: true
  *         description: ID of the Sadhsangat record to retrieve
  *         schema:
  *           type: integer
  *     responses:
  *       200:
- *         description: A list of Sadhsangat records
+ *         description: Sadhsangat record retrieved successfully
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   id:
- *                     type: integer
- *                   name:
- *                     type: string
- *                   area:
- *                     type: string
- *                   address:
- *                     type: string
- *                   pincode:
- *                     type: string
- *                   contactNo:
- *                     type: string
- *                   gender:
- *                     type: integer
- *                   dob:
- *                     type: string
- *                     format: date
- *                   age:
- *                     type: integer
- *                   qualification:
- *                     type: string
- *                   occupation:
- *                     type: string
- *                   dateOfGyan:
- *                     type: string
- *                     format: date
- *                   bloodGroup:
- *                     type: string
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                 name:
+ *                   type: string
+ *                 area:
+ *                   type: string
+ *                 address:
+ *                   type: string
+ *                 pincode:
+ *                   type: string
+ *                 contactNo:
+ *                   type: string
+ *                 gender:
+ *                   type: integer
+ *                 dob:
+ *                   type: string
+ *                   format: date
+ *                 age:
+ *                   type: integer
+ *                 qualification:
+ *                   type: string
+ *                 occupation:
+ *                   type: string
+ *                 dateOfGyan:
+ *                   type: string
+ *                   format: date
+ *                 bloodGroup:
+ *                   type: string
+ *       404:
+ *         description: Sadhsangat record not found
+ *       500:
+ *         description: Server error
  */
-router.get("/sadhsangat", sadhsangatController.fetchSadhsangat);
-
+router.get("/sadhsangat/:id", sadhsangatController.fetchSadhsangat);
 /**
  * @swagger
  * /sadhsangat/{id}:
