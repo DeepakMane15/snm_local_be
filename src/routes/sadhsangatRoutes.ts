@@ -58,60 +58,82 @@ router.post(
 
 /**
  * @swagger
- * /sadhsangat/{id}:
+ * /sadhsangat:
  *   get:
- *     summary: Get a specific Sadhsangat record by ID
+ *     summary: Get paginated Sadhsangat records
  *     tags:
  *       - Sadhsangat
  *     parameters:
  *       - name: id
- *         in: path
+ *         in: query
  *         required: true
- *         description: ID of the Sadhsangat record to retrieve
+ *         description: ID of the Sadhsangat unit
+ *         schema:
+ *           type: integer
+ *       - name: pageNo
+ *         in: query
+ *         required: true
+ *         description: Page number for pagination
+ *         schema:
+ *           type: integer
+ *       - name: limit
+ *         in: query
+ *         required: true
+ *         description: Number of records per page
  *         schema:
  *           type: integer
  *     responses:
  *       200:
- *         description: Sadhsangat record retrieved successfully
+ *         description: Sadhsangat records retrieved successfully
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
- *                 id:
+ *                 count:
  *                   type: integer
- *                 name:
- *                   type: string
- *                 area:
- *                   type: string
- *                 address:
- *                   type: string
- *                 pincode:
- *                   type: string
- *                 contactNo:
- *                   type: string
- *                 gender:
- *                   type: integer
- *                 dob:
- *                   type: string
- *                   format: date
- *                 age:
- *                   type: integer
- *                 qualification:
- *                   type: string
- *                 occupation:
- *                   type: string
- *                 dateOfGyan:
- *                   type: string
- *                   format: date
- *                 bloodGroup:
- *                   type: string
+ *                   description: Total number of Sadhsangat records
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       name:
+ *                         type: string
+ *                       unitNo:
+ *                         type: integer
+ *                       area:
+ *                         type: string
+ *                       address:
+ *                         type: string
+ *                       pincode:
+ *                         type: string
+ *                       contactNo:
+ *                         type: string
+ *                       gender:
+ *                         type: integer
+ *                       dob:
+ *                         type: string
+ *                         format: date
+ *                       age:
+ *                         type: integer
+ *                       qualification:
+ *                         type: string
+ *                       occupation:
+ *                         type: string
+ *                       dateOfGyan:
+ *                         type: string
+ *                         format: date
+ *                       bloodGroup:
+ *                         type: string
+ *       400:
+ *         description: Invalid query parameters
  *       404:
- *         description: Sadhsangat record not found
+ *         description: Sadhsangat records not found
  *       500:
  *         description: Server error
  */
-router.get("/sadhsangat/:id", sadhsangatController.fetchSadhsangat);
+router.get("/sadhsangat", sadhsangatController.fetchSadhsangat);
 
 /**
  * @swagger

@@ -1,4 +1,8 @@
-import { GetSadhsangatDataModel, SadhsangatDataModel } from "../models/sadhsangatDataModel";
+import {
+  GetSadhsangatDataModel,
+  GetSadhsangatResultModel,
+  SadhsangatDataModel,
+} from "../models/sadhsangatDataModel";
 import db from "../db/knex"; // Adjust path to knex.ts
 import redisClient from "../config/redis";
 
@@ -41,8 +45,8 @@ const createSadhsangat = async (sadhsangatData: SadhsangatDataModel) => {
   );
 };
 
-const getSadhsangat = async (unitNo: number) => {
-  const cacheKey = `sadhsangat:${unitNo}`;
+const getSadhsangat = async (unitNo: number, pageNo: number, limit: number): Promise<GetSadhsangatResultModel> => {
+  const cacheKey = `sadhsangat:${unitNo}:${pageNo}:${limit}`;
 
   return new Promise((resolve, reject) => {
     redisClient.get(cacheKey, async (err, cachedData) => {
@@ -52,11 +56,22 @@ const getSadhsangat = async (unitNo: number) => {
         return resolve(JSON.parse(cachedData));
       } else {
         try {
-          let result: SadhsangatDataModel[];
+          // let result: SadhsangatDataModel[];
+          let finalResult: GetSadhsangatResultModel = {
+            data: [],count: 0
+          };
+          // Calculate offset based on the current page number and limit
+          const offset = (pageNo - 1) * limit;
           //   result = await db.raw(`CALL GetSadhsangat(?);`, [id]);
-          result = await db("sadhsangat").where({ unitNo: unitNo });
-          redisClient.setex(cacheKey, 3600, JSON.stringify(result)); // Cache for 1 hour
-          resolve(result);
+          finalResult.data = await db("sadhsangat")
+            .where({ unitNo: unitNo })
+            .limit(limit)
+            .offset(offset);
+          redisClient.setex(cacheKey, 3600, JSON.stringify(finalResult.data)); // Cache for 1 hour
+          const countResult = await getSadhsangatRecordsCount(unitNo);
+          if(countResult)
+            finalResult.count = countResult.count;
+          resolve(finalResult);
         } catch (error) {
           reject(error);
         }
@@ -78,7 +93,7 @@ const updateSadhsangat = async (
 };
 
 const getSadhsangatById = async (id: number) => {
-    const record = await db("sadhsangat")
+  const record = await db("sadhsangat")
     .select(
       "sadhsangat.*",
       "units_master.unitNo as unitNo",
@@ -92,14 +107,22 @@ const getSadhsangatById = async (id: number) => {
 };
 
 const isSadhsangatExists = async (id: number) => {
-    const record = await db("sadhsangat").where({ id }).first();
-    return record;
-  };
+  const record = await db("sadhsangat").where({ id }).first();
+  return record;
+};
 
 const deleteSadhsangat = async (id: number): Promise<boolean> => {
   const result = await db("sadhsangat").where("id", id).del();
 
   return result > 0;
+};
+
+const getSadhsangatRecordsCount = async (unitNo: number) => {
+  const record = await db("sadhsangat")
+  .where({ unitNo: unitNo })
+  .count<{count: number}>("id as count")
+  .first();
+  return record;
 };
 
 export default {

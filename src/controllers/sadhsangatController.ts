@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import sadhsangatService from '../services/sadhsangatService';
 import logger from '../utils/winston';
+import { GetSadhsangatResultModel, SadhsangatDataModel } from '../models/sadhsangatDataModel';
 
 const createSadhsangat = async (req: Request, res: Response) => {
     try {
@@ -18,10 +19,12 @@ const createSadhsangat = async (req: Request, res: Response) => {
 const fetchSadhsangat = async (req: Request, res: Response) => {
     try {
         logger.info(`Fetch Sadhsangat records IN`);
-        const id = parseInt(req.params.id, 10);
-        const result: any = await sadhsangatService.getSadhsangat(id);
+        const id = parseInt(req.query.id as string, 10);
+        const pageNo = parseInt(req.query.pageNo as string, 10);
+        const limit = parseInt(req.query.limit as string, 10);
+        const result: GetSadhsangatResultModel = await sadhsangatService.getSadhsangat(id, pageNo, limit);
         logger.info(`Fetch Sadhsangat records Out`);
-        res.status(201).json({ message: 'Record fetched successfully', data: (result && result.length) ? result : null });
+        res.status(201).json({ message: 'Record fetched successfully', data: result });
     } catch (error) {
         logger.error(`Error fetching Sadhsangat record: - ${error}`);
         res.status(500).json({ message: 'Internal Server Error' });
