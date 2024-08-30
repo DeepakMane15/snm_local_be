@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import sadhsangatService from '../services/sadhsangatService';
 import logger from '../utils/winston';
 import { GetSadhsangatResultModel, SadhsangatDataModel } from '../models/sadhsangatDataModel';
+import { SortType, UnitMasterSortBy } from '../common/AppEnum';
 
 const createSadhsangat = async (req: Request, res: Response) => {
     try {
@@ -22,7 +23,9 @@ const fetchSadhsangat = async (req: Request, res: Response) => {
         const id = parseInt(req.query.id as string, 10);
         const pageNo = parseInt(req.query.pageNo as string, 10);
         const limit = parseInt(req.query.limit as string, 10);
-        const result: GetSadhsangatResultModel = await sadhsangatService.getSadhsangat(id, pageNo, limit);
+        const sortBy = (req.query.sortBy as UnitMasterSortBy) || UnitMasterSortBy.name;
+        const sortType = (req.query.sortType as SortType) || SortType.asc;
+        const result: GetSadhsangatResultModel = await sadhsangatService.getSadhsangat(id, pageNo, limit, sortBy, sortType);
         logger.info(`Fetch Sadhsangat records Out`);
         res.status(201).json({ message: 'Record fetched successfully', data: result });
     } catch (error) {

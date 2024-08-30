@@ -16,17 +16,37 @@ export async function up(knex: Knex): Promise<void> {
             IN _qualification VARCHAR(255),
             IN _occupation VARCHAR(255),
             IN _dateOfGyan DATE,
-            IN _bloodGroup VARCHAR(10)
+            IN _bloodGroup VARCHAR(10),
+            IN _familyId INT
         )
         BEGIN
+
+        declare familyId INT default NULL;
+
+        IF(_familyId > 0)
+        THEN
+            SET familyId = _familyId;
+        END IF;
+
             INSERT INTO sadhsangat (
                 name, area, address, pincode, contactNo, gender, dob, age,
-                qualification, occupation, dateOfGyan, bloodGroup, unitNo
+                qualification, occupation, dateOfGyan, bloodGroup, unitNo,
+                familyId
             )
             VALUES (
                 _name, _area, _address, _pincode, _contactNo, _gender,
-                _dob, _age, _qualification, _occupation, _dateOfGyan, _bloodGroup, _unitNo
+                _dob, _age, _qualification, _occupation, _dateOfGyan, _bloodGroup, _unitNo, familyId
             );
+
+        IF(familyId is NULL or familyId = 0)
+        THEN
+        SET @lastInsertId = LAST_INSERT_ID();
+        INSERT INTO family_hof_mapping (hof) VALUES (@lastInsertId);
+
+        SET familyId = LAST_INSERT_ID();
+        UPDATE sadhsangat SET familyId = familyId WHERE id = @lastInsertId;
+
+        END IF;
         END;
 
     `);

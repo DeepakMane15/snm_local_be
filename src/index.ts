@@ -4,6 +4,7 @@ const app = express();
 const bodyParser = require('body-parser');
 import sadhsangatRoutes from "./routes/sadhsangatRoutes";
 import unitsMasterRoutes from "./routes/unitsMasterRoutes";
+import hofMappingRoutes from "./routes/hofMappingRoutes";
 
 import { swaggerSpec, swaggerUi } from './swagger'; // Import Swagger config
 
@@ -16,6 +17,8 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 // Use the routes
 app.use('/api', sadhsangatRoutes);
 app.use('/api', unitsMasterRoutes);
+app.use('/api', hofMappingRoutes);
+
 
 app.listen(3200, () => {
     console.log('Server is running on port 3200');

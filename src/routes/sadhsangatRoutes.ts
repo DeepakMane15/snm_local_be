@@ -44,6 +44,10 @@ const router = express.Router();
  *                 format: date
  *               bloodGroup:
  *                 type: string
+ *               unitNo:
+ *                 type: integer
+ *               familyId:
+ *                 type: integer
  *     responses:
  *       201:
  *         description: Successfully created
@@ -80,8 +84,20 @@ router.post(
  *         in: query
  *         required: true
  *         description: Number of records per page
+  *       - name: sortBy
+ *         in: query
+ *         required: true
+ *         description: Sort By column
  *         schema:
- *           type: integer
+ *           type: string
+ *       - name: sortType
+ *         in: query
+ *         required: true
+ *         description: Sort type
+ *         schema:
+ *           type: string
+ *           enum: [asc, desc]
+ *           default: asc
  *     responses:
  *       200:
  *         description: Sadhsangat records retrieved successfully

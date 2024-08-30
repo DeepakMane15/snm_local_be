@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
 import UnitsMasterService from '../services/unitsMasterService';
 import logger from '../utils/winston';
+import { GetUnitsMasterResultModel, UnitsMasterDataModel } from '../models/unitsMasterDataModel';
+import { SortType, UnitMasterSortBy } from '../common/AppEnum';
 
 const createUnit = async (req: Request, res: Response) => {
   try {
@@ -18,7 +20,11 @@ const createUnit = async (req: Request, res: Response) => {
 const fetchAllUnits = async (req: Request, res: Response) => {
   try {
     logger.info(`Fetching Unit record by id IN`);
-    const units = await UnitsMasterService.getUnits();
+    const pageNo = parseInt(req.query.pageNo as string, 10);
+    const limit = parseInt(req.query.limit as string, 10);
+    const sortBy = (req.query.sortBy as UnitMasterSortBy) || UnitMasterSortBy.name;
+    const sortType = (req.query.sortType as SortType) || SortType.asc;
+    const units: GetUnitsMasterResultModel = await UnitsMasterService.getUnits(pageNo, limit, sortBy, sortType);
     logger.info(`Fetching Unit record by id OUT`);
     res.status(200).json({message: "Units fetched successfully", data: units});
   } catch (error) {

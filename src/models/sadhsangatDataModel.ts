@@ -12,6 +12,7 @@ export interface SadhsangatDataModel {
     occupation: string;
     dateOfGyan: Date;
     bloodGroup: string;
+    familyId: number;
 }
 
 export interface GetSadhsangatResultModel {

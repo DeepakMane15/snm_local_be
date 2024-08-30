@@ -5,6 +5,8 @@ import {
 } from "../models/sadhsangatDataModel";
 import db from "../db/knex"; // Adjust path to knex.ts
 import redisClient from "../config/redis";
+import { UnitMasterSortBy, SortType, RedisKeysConstant } from "../common/AppEnum";
+import { deleteKeysWithPrefix } from "./redisService";
 
 const createSadhsangat = async (sadhsangatData: SadhsangatDataModel) => {
   const {
@@ -21,11 +23,15 @@ const createSadhsangat = async (sadhsangatData: SadhsangatDataModel) => {
     occupation,
     dateOfGyan,
     bloodGroup,
+    familyId
   } = sadhsangatData;
+
+  // delete the keys here
+  await deleteKeysWithPrefix(`${RedisKeysConstant.Sadhsangat}:`);
 
   return db.raw(
     `
-        CALL InsertIntoSadhsangat(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+        CALL InsertIntoSadhsangat(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
     `,
     [
       name,
@@ -41,12 +47,13 @@ const createSadhsangat = async (sadhsangatData: SadhsangatDataModel) => {
       occupation,
       dateOfGyan,
       bloodGroup,
+      familyId
     ]
   );
 };
 
-const getSadhsangat = async (unitNo: number, pageNo: number, limit: number): Promise<GetSadhsangatResultModel> => {
-  const cacheKey = `sadhsangat:${unitNo}:${pageNo}:${limit}`;
+const getSadhsangat = async (unitNo: number, pageNo: number, limit: number, sortBy: UnitMasterSortBy, sortType: SortType): Promise<GetSadhsangatResultModel> => {
+  const cacheKey = `${RedisKeysConstant.Sadhsangat}:${unitNo}:${pageNo}:${limit}:${sortBy}:${sortType}`;
 
   return new Promise((resolve, reject) => {
     redisClient.get(cacheKey, async (err, cachedData) => {
@@ -65,6 +72,7 @@ const getSadhsangat = async (unitNo: number, pageNo: number, limit: number): Pro
           //   result = await db.raw(`CALL GetSadhsangat(?);`, [id]);
           finalResult.data = await db("sadhsangat")
             .where({ unitNo: unitNo })
+            .orderBy(sortBy, sortType)
             .limit(limit)
             .offset(offset);
           redisClient.setex(cacheKey, 3600, JSON.stringify(finalResult.data)); // Cache for 1 hour

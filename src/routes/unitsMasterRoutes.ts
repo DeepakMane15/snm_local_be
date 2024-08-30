@@ -46,6 +46,31 @@ router.post('/units', UnitsMasterController.createUnit);
  *   get:
  *     tags:
  *       - Unit Master
+ *     parameters:
+ *       - name: pageNo
+ *         in: query
+ *         required: true
+ *         description: Page number for pagination
+ *         schema:
+ *           type: integer
+ *       - name: limit
+ *         in: query
+ *         required: true
+ *         description: Number of records per page
+ *       - name: sortBy
+ *         in: query
+ *         required: true
+ *         description: Sort By column
+ *         schema:
+ *           type: string
+ *       - name: sortType
+ *         in: query
+ *         required: true
+ *         description: Sort type
+ *         schema:
+ *           type: string
+ *           enum: [asc, desc]
+ *           default: asc
  *     summary: Get all units
  *     description: Retrieve all units from the units_master table
  *     responses:
@@ -54,16 +79,22 @@ router.post('/units', UnitsMasterController.createUnit);
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   id:
- *                     type: integer
- *                   name:
- *                     type: string
- *                   unitNo:
- *                     type: string
+ *               type: object
+ *               properties:
+ *                 count:
+ *                   type: integer
+ *                   description: Total number of Units records
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                       name:
+ *                         type: string
+ *                       unitNo:
+ *                         type: string
  *       500:
  *         description: An error occurred
  */
