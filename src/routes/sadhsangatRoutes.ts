@@ -1,6 +1,7 @@
 import express from "express";
 import sadhsangatController from "../controllers/sadhsangatController";
 import validateSadhsangat from "../middlewares/validateSadhsangat";
+import authorize from "../middlewares/authMiddleware";
 
 const router = express.Router();
 
@@ -56,6 +57,7 @@ const router = express.Router();
  */
 router.post(
   "/sadhsangat",
+  authorize,
   validateSadhsangat,
   sadhsangatController.createSadhsangat
 );
@@ -74,25 +76,32 @@ router.post(
  *         description: ID of the Sadhsangat unit
  *         schema:
  *           type: integer
+ *           default: 1
  *       - name: pageNo
  *         in: query
  *         required: true
  *         description: Page number for pagination
  *         schema:
  *           type: integer
+ *           default: 1
  *       - name: limit
  *         in: query
  *         required: true
  *         description: Number of records per page
-  *       - name: sortBy
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *       - name: sortBy
  *         in: query
- *         required: true
- *         description: Sort By column
+ *         required: false
+ *         description: Column to sort by
  *         schema:
  *           type: string
+ *           enum: [name]
+ *           default: name
  *       - name: sortType
  *         in: query
- *         required: true
+ *         required: false
  *         description: Sort type
  *         schema:
  *           type: string
@@ -142,8 +151,6 @@ router.post(
  *                         format: date
  *                       bloodGroup:
  *                         type: string
- *                       isHOF:
- *                         type: boolean
  *       400:
  *         description: Invalid query parameters
  *       404:
@@ -151,7 +158,7 @@ router.post(
  *       500:
  *         description: Server error
  */
-router.get("/sadhsangat", sadhsangatController.fetchSadhsangat);
+router.get("/sadhsangat", authorize, sadhsangatController.fetchSadhsangat);
 
 /**
  * @swagger
@@ -208,7 +215,7 @@ router.get("/sadhsangat", sadhsangatController.fetchSadhsangat);
  *       500:
  *         description: Server error
  */
-router.get("/sadhsangatById/:id", sadhsangatController.fetchSadhsangatById);
+router.get("/sadhsangatById/:id",authorize, sadhsangatController.fetchSadhsangatById);
 
 
 /**
@@ -258,6 +265,8 @@ router.get("/sadhsangatById/:id", sadhsangatController.fetchSadhsangatById);
  *                 format: date
  *               bloodGroup:
  *                 type: string
+ *               isHOF:
+ *                  type: boolean
  *     responses:
  *       200:
  *         description: Successfully updated
@@ -268,6 +277,7 @@ router.get("/sadhsangatById/:id", sadhsangatController.fetchSadhsangatById);
  */
 router.put(
   "/sadhsangat/:id",
+  authorize,
   validateSadhsangat,
   sadhsangatController.updateSadhsangat
 );
@@ -292,6 +302,6 @@ router.put(
  *       404:
  *         description: Record not found
  */
-router.delete("/sadhsangat/:id", sadhsangatController.deleteSadhsangat);
+router.delete("/sadhsangat/:id", authorize, sadhsangatController.deleteSadhsangat);
 
 export default router;

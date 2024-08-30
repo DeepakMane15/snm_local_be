@@ -1,5 +1,7 @@
-import express from 'express';
-import UnitsMasterController from '../controllers/unitsMasterController';
+import express from "express";
+import UnitsMasterController from "../controllers/unitsMasterController";
+import validateUnit from "../middlewares/validateUnit";
+import authorize from "../middlewares/authMiddleware";
 
 const router = express.Router();
 
@@ -38,7 +40,12 @@ const router = express.Router();
  *       500:
  *         description: An error occurred
  */
-router.post('/units', UnitsMasterController.createUnit);
+router.post(
+  "/units",
+  authorize,
+  validateUnit,
+  UnitsMasterController.createUnit
+);
 
 /**
  * @swagger
@@ -46,33 +53,38 @@ router.post('/units', UnitsMasterController.createUnit);
  *   get:
  *     tags:
  *       - Unit Master
+ *     summary: Get all units
+ *     description: Retrieve all units from the units_master table
  *     parameters:
  *       - name: pageNo
  *         in: query
- *         required: true
+ *         required: false
  *         description: Page number for pagination
  *         schema:
  *           type: integer
+ *           default: 1
  *       - name: limit
  *         in: query
- *         required: true
+ *         required: false
  *         description: Number of records per page
+ *         schema:
+ *           type: integer
+ *           default: 10
  *       - name: sortBy
  *         in: query
- *         required: true
+ *         required: false
  *         description: Sort By column
  *         schema:
  *           type: string
+ *           default: "name"
  *       - name: sortType
  *         in: query
- *         required: true
+ *         required: false
  *         description: Sort type
  *         schema:
  *           type: string
  *           enum: [asc, desc]
- *           default: asc
- *     summary: Get all units
- *     description: Retrieve all units from the units_master table
+ *           default: "asc"
  *     responses:
  *       200:
  *         description: A list of units
@@ -98,7 +110,7 @@ router.post('/units', UnitsMasterController.createUnit);
  *       500:
  *         description: An error occurred
  */
-router.get('/units', UnitsMasterController.fetchAllUnits);
+router.get("/units", authorize, UnitsMasterController.fetchAllUnits);
 
 /**
  * @swagger
@@ -115,6 +127,37 @@ router.get('/units', UnitsMasterController.fetchAllUnits);
  *         description: The ID of the unit
  *         schema:
  *           type: integer
+ *       - in: query
+ *         name: pageNo
+ *         required: false
+ *         description: Page number for pagination
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         required: false
+ *         description: Number of records per page
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *       - in: query
+ *         name: sortBy
+ *         required: false
+ *         description: Sort by column
+ *         schema:
+ *           type: string
+ *           default: "name"  # Set your default column here
+ *       - in: query
+ *         name: sortType
+ *         required: false
+ *         description: Sort type
+ *         schema:
+ *           type: string
+ *           enum:
+ *             - asc
+ *             - desc
+ *           default: "asc"
  *     responses:
  *       200:
  *         description: A unit
@@ -134,6 +177,6 @@ router.get('/units', UnitsMasterController.fetchAllUnits);
  *       500:
  *         description: An error occurred
  */
-router.get('/units/:id', UnitsMasterController.fetchUnitById);
+router.get("/units/:id", authorize, UnitsMasterController.fetchUnitById);
 
 export default router;

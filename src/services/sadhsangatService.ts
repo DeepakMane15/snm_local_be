@@ -114,6 +114,7 @@ const updateSadhsangat = async (
   if (!existingRecord) {
     return null;
   }
+  await deleteKeysWithPrefix(`${RedisKeysConstant.Sadhsangat}:`);
   return await db("sadhsangat").where({ id }).update(updateData);
 };
 
@@ -138,6 +139,7 @@ const isSadhsangatExists = async (id: number) => {
 
 const deleteSadhsangat = async (id: number): Promise<boolean> => {
   const result = await db("sadhsangat").where("id", id).del();
+  await deleteKeysWithPrefix(`${RedisKeysConstant.Sadhsangat}:`);
 
   return result > 0;
 };

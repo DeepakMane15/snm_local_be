@@ -1,6 +1,7 @@
 import express from "express";
 import UnitsMasterController from "../controllers/unitsMasterController";
 import FamilyMemberController from "../controllers/familyMemberController";
+import authorize from "../middlewares/authMiddleware";
 
 const router = express.Router();
 
@@ -80,6 +81,6 @@ const router = express.Router();
  *       500:
  *         description: Server error
  */
-router.get("/family-members", FamilyMemberController.fetchAllFamilyMembers);
+router.get("/family-members", authorize, FamilyMemberController.fetchAllFamilyMembers);
 
 export default router;

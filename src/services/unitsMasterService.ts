@@ -2,8 +2,10 @@ import { RedisKeysConstant, SortType, UnitMasterSortBy } from "../common/AppEnum
 import redisClient from "../config/redis";
 import db from "../db/knex"; // Adjust path to knex.ts
 import { GetUnitsMasterResultModel, UnitsMasterDataModel } from "../models/unitsMasterDataModel";
+import { deleteKeysWithPrefix } from "./redisService";
 
 const insertUnit = async (unitData: UnitsMasterDataModel) => {
+  await deleteKeysWithPrefix(`${RedisKeysConstant.Unit}:`);
   return await db("units_master").insert(unitData);
 };
 

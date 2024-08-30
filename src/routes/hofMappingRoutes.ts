@@ -1,6 +1,7 @@
 import express from "express";
 import UnitsMasterController from "../controllers/unitsMasterController";
 import HOFMappingController from "../controllers/hofMappingController";
+import authorize from "../middlewares/authMiddleware";
 
 const router = express.Router();
 
@@ -76,6 +77,6 @@ const router = express.Router();
  *       500:
  *         description: Server error
  */
-router.get("/hof-mappings", HOFMappingController.fetchAllHOFMappings);
+router.get("/hof-mappings", authorize, HOFMappingController.fetchAllHOFMappings);
 
 export default router;
