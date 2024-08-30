@@ -3,10 +3,6 @@ import redisClient from "../config/redis";
 import db from "../db/knex"; // Adjust path to knex.ts
 import { GetHOFResultModel, HOFDataModel } from "../models/hofDataModel";
 
-const createHOFMapping = async (hofData: HOFDataModel) => {
-  return await db("family_hof_mapping").insert(hofData);
-};
-
 const getHOFMappings = async (pageNo: number, limit: number, sortType: SortType): Promise<GetHOFResultModel> => {
   let cacheKey = `${RedisKeysConstant.HOFMapping}::${pageNo}:${limit}:${sortType}`;
   return new Promise((resolve, reject) => {
@@ -46,4 +42,4 @@ const getHOFMappingRecordsCount = async () => {
   return record;
 };
 
-export default { createHOFMapping, getHOFMappings };
+export default { getHOFMappings };

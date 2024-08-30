@@ -5,6 +5,7 @@ const bodyParser = require('body-parser');
 import sadhsangatRoutes from "./routes/sadhsangatRoutes";
 import unitsMasterRoutes from "./routes/unitsMasterRoutes";
 import hofMappingRoutes from "./routes/hofMappingRoutes";
+import familyMemberRoutes from "./routes/familyMembersRoutes";
 
 import { swaggerSpec, swaggerUi } from './swagger'; // Import Swagger config
 
@@ -18,6 +19,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/api', sadhsangatRoutes);
 app.use('/api', unitsMasterRoutes);
 app.use('/api', hofMappingRoutes);
+app.use('/api', familyMemberRoutes);
 
 
 app.listen(3200, () => {

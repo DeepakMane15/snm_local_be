@@ -15,5 +15,6 @@ export enum SortType {
 export enum RedisKeysConstant {
   Sadhsangat = "sadhsangat",
   Unit = "units",
-  HOFMapping= "hofMapping"
+  HOFMapping= "hofMapping",
+  FamilyMember = "familyMember"
 }

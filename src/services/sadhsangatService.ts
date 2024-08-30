@@ -5,7 +5,11 @@ import {
 } from "../models/sadhsangatDataModel";
 import db from "../db/knex"; // Adjust path to knex.ts
 import redisClient from "../config/redis";
-import { UnitMasterSortBy, SortType, RedisKeysConstant } from "../common/AppEnum";
+import {
+  UnitMasterSortBy,
+  SortType,
+  RedisKeysConstant,
+} from "../common/AppEnum";
 import { deleteKeysWithPrefix } from "./redisService";
 
 const createSadhsangat = async (sadhsangatData: SadhsangatDataModel) => {
@@ -23,7 +27,7 @@ const createSadhsangat = async (sadhsangatData: SadhsangatDataModel) => {
     occupation,
     dateOfGyan,
     bloodGroup,
-    familyId
+    familyId,
   } = sadhsangatData;
 
   // delete the keys here
@@ -47,12 +51,18 @@ const createSadhsangat = async (sadhsangatData: SadhsangatDataModel) => {
       occupation,
       dateOfGyan,
       bloodGroup,
-      familyId
+      familyId,
     ]
   );
 };
 
-const getSadhsangat = async (unitNo: number, pageNo: number, limit: number, sortBy: UnitMasterSortBy, sortType: SortType): Promise<GetSadhsangatResultModel> => {
+const getSadhsangat = async (
+  unitNo: number,
+  pageNo: number,
+  limit: number,
+  sortBy: UnitMasterSortBy,
+  sortType: SortType
+): Promise<GetSadhsangatResultModel> => {
   const cacheKey = `${RedisKeysConstant.Sadhsangat}:${unitNo}:${pageNo}:${limit}:${sortBy}:${sortType}`;
 
   return new Promise((resolve, reject) => {
@@ -65,20 +75,27 @@ const getSadhsangat = async (unitNo: number, pageNo: number, limit: number, sort
         try {
           // let result: SadhsangatDataModel[];
           let finalResult: GetSadhsangatResultModel = {
-            data: [],count: 0
+            data: [],
+            count: 0,
           };
           // Calculate offset based on the current page number and limit
           const offset = (pageNo - 1) * limit;
           //   result = await db.raw(`CALL GetSadhsangat(?);`, [id]);
-          finalResult.data = await db("sadhsangat")
+          finalResult.data = await db("sadhsangat as S")
+            .select(
+              "S.*",
+              db.raw(
+                "CASE WHEN HF.hof IS NOT NULL THEN true ELSE false END as isHOF"
+              )
+            )
+            .leftJoin("family_hof_mapping as HF", "S.id", "=", "HF.hof")
             .where({ unitNo: unitNo })
             .orderBy(sortBy, sortType)
             .limit(limit)
             .offset(offset);
           redisClient.setex(cacheKey, 3600, JSON.stringify(finalResult.data)); // Cache for 1 hour
           const countResult = await getSadhsangatRecordsCount(unitNo);
-          if(countResult)
-            finalResult.count = countResult.count;
+          if (countResult) finalResult.count = countResult.count;
           resolve(finalResult);
         } catch (error) {
           reject(error);
@@ -127,9 +144,9 @@ const deleteSadhsangat = async (id: number): Promise<boolean> => {
 
 const getSadhsangatRecordsCount = async (unitNo: number) => {
   const record = await db("sadhsangat")
-  .where({ unitNo: unitNo })
-  .count<{count: number}>("id as count")
-  .first();
+    .where({ unitNo: unitNo })
+    .count<{ count: number }>("id as count")
+    .first();
   return record;
 };
 

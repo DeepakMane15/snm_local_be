@@ -142,6 +142,8 @@ router.post(
  *                         format: date
  *                       bloodGroup:
  *                         type: string
+ *                       isHOF:
+ *                         type: boolean
  *       400:
  *         description: Invalid query parameters
  *       404:
