@@ -1,5 +1,4 @@
 import {
-  GetSadhsangatDataModel,
   GetSadhsangatResultModel,
   SadhsangatDataModel,
 } from "../models/sadhsangatDataModel";
@@ -84,12 +83,15 @@ const getSadhsangat = async (
           finalResult.data = await db("sadhsangat as S")
             .select(
               "S.*",
+              "units_master.unitNo as unitNo",
+              "units_master.name as unitName",
               db.raw(
                 "CASE WHEN HF.hof IS NOT NULL THEN true ELSE false END as isHOF"
               )
             )
             .leftJoin("family_hof_mapping as HF", "S.id", "=", "HF.hof")
-            .where({ unitNo: unitNo })
+            .leftJoin("units_master", "S.unitNo", "=", "units_master.id")
+            .where('S.unitNo', '=', unitNo)
             .orderBy(sortBy, sortType)
             .limit(limit)
             .offset(offset);
@@ -129,7 +131,7 @@ const getSadhsangatById = async (id: number) => {
     .where("sadhsangat.id", id)
     .first();
 
-  return record as GetSadhsangatDataModel;
+  return record as SadhsangatDataModel;
 };
 
 const isSadhsangatExists = async (id: number) => {

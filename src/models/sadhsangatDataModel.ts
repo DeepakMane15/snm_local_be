@@ -1,6 +1,8 @@
 export interface SadhsangatDataModel {
+  id: number;
   name: string;
   unitNo: number;
+  unitName: string;
   area: string;
   address: string;
   pincode: string;
@@ -21,6 +23,3 @@ export class GetSadhsangatResultModel {
   public count: number = 0;
 }
 
-export interface GetSadhsangatDataModel extends SadhsangatDataModel {
-  unitName: string;
-}
