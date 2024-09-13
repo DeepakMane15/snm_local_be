@@ -1,4 +1,6 @@
-export interface SadhsangatDataModel {
+import { SewadalDataModel } from "./sewadalDataModel";
+
+export interface SadhsangatDataModel extends SewadalDataModel {
   id: number;
   name: string;
   unitNo: number;
@@ -15,11 +17,10 @@ export interface SadhsangatDataModel {
   dateOfGyan: Date;
   bloodGroup: string;
   familyId: number;
-  isHOF: boolean;
+  isSewadal: boolean;
 }
 
 export class GetSadhsangatResultModel {
-  public data: SadhsangatDataModel[] = [];
+  public data: Partial<SadhsangatDataModel[]> = [];
   public count: number = 0;
 }
-

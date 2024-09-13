@@ -20,12 +20,13 @@ const createSewadal = async (req: Request, res: Response) => {
 const fetchSewadal = async (req: Request, res: Response) => {
     try {
         logger.info(`Fetch Sewadal records IN`);
-        const id = parseInt(req.query.id as string, 10);
         const pageNo = parseInt(req.query.pageNo as string, 10);
         const limit = parseInt(req.query.limit as string, 10);
+        const unitId = parseInt(req.query.unitNo as string, 0);
         const sortBy = (req.query.sortBy as SewadalSortBy) || SewadalSortBy.recruitmentDate;
         const sortType = (req.query.sortType as SortType) || SortType.asc;
-        const result: GetSewadalResultModel = await SewadalService.getSewadal(id, pageNo, limit, sortBy, sortType);
+        const searchString = (req.query.searchString as string) || "";
+        const result: GetSewadalResultModel = await SewadalService.getSewadal(unitId, pageNo, limit, sortBy, sortType, searchString);
         logger.info(`Fetch Sewadal records OUT`);
         res.status(200).json({ message: 'Records fetched successfully', data: result });
     } catch (error) {

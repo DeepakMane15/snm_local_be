@@ -27,32 +27,102 @@ const createSadhsangat = async (sadhsangatData: SadhsangatDataModel) => {
     dateOfGyan,
     bloodGroup,
     familyId,
+    isSewadal,
+    personalNo,
+    sewadalNo,
+    recruitmentDate,
+    badgeBeltDate
   } = sadhsangatData;
 
   // delete the keys here
   await deleteKeysWithPrefix(`${RedisKeysConstant.Sadhsangat}:`);
+  await deleteKeysWithPrefix(`${RedisKeysConstant.Sewadal}:`);
 
-  return db.raw(
-    `
-        CALL InsertIntoSadhsangat(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
-    `,
-    [
-      name,
-      unitNo,
-      area,
-      address,
-      pincode,
-      contactNo,
-      gender,
-      dob,
-      age,
-      qualification,
-      occupation,
-      dateOfGyan,
-      bloodGroup,
-      familyId,
-    ]
-  );
+
+  // return db.raw(
+  //   `
+  //       CALL InsertIntoSadhsangat(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+  //   `,
+  //   [
+  //     name,
+  //     unitNo,
+  //     area,
+  //     address,
+  //     pincode,
+  //     contactNo,
+  //     gender,
+  //     dob,
+  //     age,
+  //     qualification,
+  //     occupation,
+  //     dateOfGyan,
+  //     bloodGroup,
+  //     familyId,
+  //     isSewadal ? 1 : 0,
+  //     personalNo,
+  //     sewadalNo,
+  //     recruitmentDate,
+  //   ]
+  // );
+  try {
+    return db.transaction(async (trx) => {
+      let insertedFamilyId = familyId;
+
+      // Insert into sadhsangat table
+      const [insertedId] = await trx("sadhsangat")
+        .insert({
+          name,
+          unitNo,
+          area,
+          address,
+          pincode,
+          contactNo,
+          gender,
+          dob,
+          age,
+          qualification,
+          occupation,
+          dateOfGyan,
+          bloodGroup,
+          familyId: familyId > 0 ? familyId : null,
+        })
+        .returning("id"); // Assuming 'id' is the primary key
+
+      // Handle familyId assignment
+      if (!insertedFamilyId || insertedFamilyId === 0) {
+        // Insert into family_hof_mapping table
+        const [hofId] = await trx("family_hof_mapping")
+          .insert({
+            hof: insertedId,
+          })
+          .returning("id");
+
+        // Update sadhsangat with the new familyId
+        await trx("sadhsangat")
+          .where({ id: insertedId })
+          .update({ familyId: hofId });
+
+        insertedFamilyId = hofId;
+      }
+
+      // Handle isSewadal condition
+      if (isSewadal) {
+        // Insert into sewadal table
+        await trx("sewadal").insert({
+          sId: insertedId,
+          personalNo,
+          sewadalNo,
+          recruitmentDate,
+          badgeBeltDate
+        });
+      }
+
+      // Return the ID of the inserted sadhsangat record
+      return insertedId;
+    });
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 const getSadhsangat = async (
@@ -60,9 +130,11 @@ const getSadhsangat = async (
   pageNo: number,
   limit: number,
   sortBy: UnitMasterSortBy,
-  sortType: SortType
+  sortType: SortType,
+  searchString: string
 ): Promise<GetSadhsangatResultModel> => {
-  const cacheKey = `${RedisKeysConstant.Sadhsangat}:${unitNo}:${pageNo}:${limit}:${sortBy}:${sortType}`;
+  unitNo = unitNo > 0 ? unitNo : 1;
+  const cacheKey = `${RedisKeysConstant.Sadhsangat}:${unitNo}:${pageNo}:${limit}:${sortBy}:${sortType}:${searchString}`;
 
   return new Promise((resolve, reject) => {
     redisClient.get(cacheKey, async (err, cachedData) => {
@@ -80,7 +152,7 @@ const getSadhsangat = async (
           // Calculate offset based on the current page number and limit
           const offset = (pageNo - 1) * limit;
           //   result = await db.raw(`CALL GetSadhsangat(?);`, [id]);
-          finalResult.data = await db("sadhsangat as S")
+          const query =  db("sadhsangat as S")
             .select(
               "S.*",
               "units_master.unitNo as unitNo",
@@ -91,13 +163,20 @@ const getSadhsangat = async (
             )
             .leftJoin("family_hof_mapping as HF", "S.id", "=", "HF.hof")
             .leftJoin("units_master", "S.unitNo", "=", "units_master.id")
-            .where('S.unitNo', '=', unitNo)
+            .where("S.unitNo", "=", unitNo);
+
+            if (searchString.trim()) {
+              query.where("S.name", "like", `%${searchString}%`);
+            }
+
+            finalResult.data = await query
             .orderBy(sortBy, sortType)
             .limit(limit)
             .offset(offset);
-          redisClient.setex(cacheKey, 3600, JSON.stringify(finalResult.data)); // Cache for 1 hour
-          const countResult = await getSadhsangatRecordsCount(unitNo);
-          if (countResult) finalResult.count = countResult.count;
+
+            const countResult = await getSadhsangatRecordsCount(unitNo,searchString);
+            if (countResult) finalResult.count = countResult.count;
+            redisClient.setex(cacheKey, 3600, JSON.stringify(finalResult)); // Cache for 1 hour
           resolve(finalResult);
         } catch (error) {
           reject(error);
@@ -146,10 +225,14 @@ const deleteSadhsangat = async (id: number): Promise<boolean> => {
   return result > 0;
 };
 
-const getSadhsangatRecordsCount = async (unitNo: number) => {
-  const record = await db("sadhsangat")
+const getSadhsangatRecordsCount = async (unitNo: number,searchString: string) => {
+  const query = db("sadhsangat")
     .where({ unitNo: unitNo })
-    .count<{ count: number }>("id as count")
+
+    if(searchString.trim()) {
+      query.where("name", "like", `%${searchString}%`);
+    }
+    const record = await query.count<{ count: number }>("id as count")
     .first();
   return record;
 };

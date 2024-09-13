@@ -12,7 +12,7 @@ exports.up = async function (knex) {
     table.foreign('sID').references('id').inTable('sadhsangat').onDelete('CASCADE');
     table.integer('personalNo').nullable().unique();
     table.string('sewadalNo').nullable().unique();
-    table.date('recruitmentDate').notNullable().unique();
+    table.date('recruitmentDate').notNullable();
     table.index(['sID', 'personalNo', 'sewadalNo']);
   });
 };

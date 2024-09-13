@@ -49,6 +49,16 @@ const router = express.Router();
  *                 type: integer
  *               familyId:
  *                 type: integer
+ *               isSewadal:
+ *                 type: boolean
+ *               personalNo:
+ *                 type: integer
+ *               sewadalNo:
+ *                 type: integer
+ *               recruitmentDate:
+ *                 type: string
+ *               badgeBeltDate:
+ *                 type: string
  *     responses:
  *       201:
  *         description: Successfully created
@@ -70,7 +80,7 @@ router.post(
  *     tags:
  *       - Sadhsangat
  *     parameters:
- *       - name: id
+ *       - name: unitId
  *         in: query
  *         required: true
  *         description: ID of the Sadhsangat unit

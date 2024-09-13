@@ -1,13 +1,14 @@
-import { SadhsangatDataModel } from "./sadhsangatDataModel";
+import { GetSadhsangatResultModel, SadhsangatDataModel } from "./sadhsangatDataModel";
 
-export interface SewadalDataModel extends SadhsangatDataModel {
+export interface SewadalDataModel {
   sewadalId: number;
   personalNo: number;
   sewadalNo: string;
   recruitmentDate: Date;
+  badgeBeltDate: Date;
 }
 
 export class GetSewadalResultModel {
-  public data: SewadalDataModel[] = [];
+  public data: GetSadhsangatResultModel[] = [];
   public count: number = 0;
 }

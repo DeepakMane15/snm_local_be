@@ -6,11 +6,12 @@ import { deleteKeysWithPrefix } from "./redisService";
 
 const insertUnit = async (unitData: UnitsMasterDataModel) => {
   await deleteKeysWithPrefix(`${RedisKeysConstant.Unit}:`);
+  await deleteKeysWithPrefix(`${RedisKeysConstant.SewadalListFilter}:`);
   return await db("units_master").insert(unitData);
 };
 
 const getUnits = async (pageNo: number, limit: number, sortBy: UnitMasterSortBy, sortType: SortType): Promise<GetUnitsMasterResultModel> => {
-  let cacheKey = `${RedisKeysConstant.Unit}::${pageNo}:${limit}:${sortBy}:${sortType}`;
+  let cacheKey = `${RedisKeysConstant.Unit}:${pageNo}:${limit}:${sortBy}:${sortType}`;
   return new Promise((resolve, reject) => {
     redisClient.get(cacheKey, async (err, cachedData) => {
       if (err) return reject(err);

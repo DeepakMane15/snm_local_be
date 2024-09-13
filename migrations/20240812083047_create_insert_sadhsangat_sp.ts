@@ -1,8 +1,7 @@
 import type { Knex } from "knex";
 
-
 export async function up(knex: Knex): Promise<void> {
-    return knex.raw(`
+  return knex.raw(`
         CREATE PROCEDURE InsertIntoSadhsangat(
             IN _name VARCHAR(255),
             IN _unitNo INT,
@@ -17,7 +16,11 @@ export async function up(knex: Knex): Promise<void> {
             IN _occupation VARCHAR(255),
             IN _dateOfGyan DATE,
             IN _bloodGroup VARCHAR(10),
-            IN _familyId INT
+            IN _familyId INT,
+            IN _isSewadal INT,
+            IN _personalNo INT,
+            IN _sewadalNo VARCHAR(50),
+            IN _recruitmentDate DATE
         )
         BEGIN
 
@@ -47,15 +50,20 @@ export async function up(knex: Knex): Promise<void> {
         UPDATE sadhsangat SET familyId = familyId WHERE id = @lastInsertId;
 
         END IF;
+
+        IF (_isSewadal = 1)
+        THEN
+            INSERT INTO sewadal(sId, personalNo, sewadalNo, recruitmentDate)
+            values
+            (@lastInsertId, _personalNo, _sewadalNo, _recruitmentDate);
+        END IF;
         END;
 
     `);
 }
 
-
 export async function down(knex: Knex): Promise<void> {
-    return knex.raw(`
+  return knex.raw(`
         DROP PROCEDURE IF EXISTS InsertIntoSadhsangat;
     `);
 }
-

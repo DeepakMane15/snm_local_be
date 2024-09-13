@@ -7,7 +7,7 @@ import { SortType, UnitMasterSortBy } from '../common/AppEnum';
 const createSadhsangat = async (req: Request, res: Response) => {
     try {
         logger.info(`Create Sadhsangat record IN`);
-        const sadhsangatData = req.body;
+        const sadhsangatData = req.body as SadhsangatDataModel;
         const result = await sadhsangatService.createSadhsangat(sadhsangatData);
         logger.info(`Create Sadhsangat record OUT`);
         res.status(201).json({ message: 'Record inserted successfully', id: result[0] });
@@ -20,14 +20,15 @@ const createSadhsangat = async (req: Request, res: Response) => {
 const fetchSadhsangat = async (req: Request, res: Response) => {
     try {
         logger.info(`Fetch Sadhsangat records IN`);
-        const id = parseInt(req.query.id as string, 10);
+        const unitId = parseInt(req.query.unitId as string, 10);
         const pageNo = parseInt(req.query.pageNo as string, 10);
         const limit = parseInt(req.query.limit as string, 10);
         const sortBy = (req.query.sortBy as UnitMasterSortBy) || UnitMasterSortBy.name;
         const sortType = (req.query.sortType as SortType) || SortType.asc;
-        const result: GetSadhsangatResultModel = await sadhsangatService.getSadhsangat(id, pageNo, limit, sortBy, sortType);
+        const searchString = (req.query.searchString as string) || "";
+        const result: GetSadhsangatResultModel = await sadhsangatService.getSadhsangat(unitId, pageNo, limit, sortBy, sortType,searchString);
         logger.info(`Fetch Sadhsangat records Out`);
-        res.status(201).json({ message: 'Record fetched successfully', data: result });
+        res.status(201).json({ message: 'Record fetched successfully1', data: result });
     } catch (error) {
         logger.error(`Error fetching Sadhsangat record: - ${error}`);
         res.status(500).json({ message: 'Internal Server Error' });

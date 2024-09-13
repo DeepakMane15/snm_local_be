@@ -4,7 +4,7 @@ import db from "../db/knex"; // Adjust path to knex.ts
 import { GetHOFResultModel, HOFDataModel } from "../models/hofDataModel";
 
 const getHOFMappings = async (pageNo: number, limit: number, sortType: SortType): Promise<GetHOFResultModel> => {
-  let cacheKey = `${RedisKeysConstant.HOFMapping}::${pageNo}:${limit}:${sortType}`;
+  let cacheKey = `${RedisKeysConstant.HOFMapping}:${pageNo}:${limit}:${sortType}`;
   return new Promise((resolve, reject) => {
     redisClient.get(cacheKey, async (err, cachedData) => {
       if (err) return reject(err);

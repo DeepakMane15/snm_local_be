@@ -18,10 +18,18 @@ export enum RedisKeysConstant {
   HOFMapping= "hofMapping",
   FamilyMember = "familyMember",
   Sewadal = "sewadal",
+
+  // Filters
+  SewadalListFilter = "sewadalListFilter"
 }
 
 export enum SewadalSortBy {
   PersonalNo = 'personalNo',
   SewadalNo = 'sewadalNo',
   recruitmentDate = 'recruitmentDate'
+}
+
+export enum listingType {
+  NONE,
+  SEWADAL
 }

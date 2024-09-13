@@ -26,9 +26,12 @@ const getSewadal = async (
   pageNo: number,
   limit: number,
   sortBy: SewadalSortBy,
-  sortType: SortType
+  sortType: SortType,
+  searchString: string
 ): Promise<GetSewadalResultModel> => {
-  const cacheKey = `${RedisKeysConstant.Sewadal}:${unitId}:${pageNo}:${limit}:${sortBy}:${sortType}`;
+  // unitId will be taken from headers
+  unitId = unitId > 0 ? unitId : 1;
+  const cacheKey = `${RedisKeysConstant.Sewadal}:${unitId}:${pageNo}:${limit}:${sortBy}:${sortType}:${searchString}`;
 
   return new Promise((resolve, reject) => {
     redisClient.get(cacheKey, async (err, cachedData) => {
@@ -41,16 +44,21 @@ const getSewadal = async (
           let finalResult = new GetSewadalResultModel();
           const offset = (pageNo - 1) * limit;
 
-          finalResult.data = await db("sewadal as SD")
+          let query = db("sewadal as SD")
             .select("SG.*", "SD.*")
-            .join("sadhsangat SG", "SG.id", "=", "SD.sId")
-            .where("SG.unitNo", "=", unitId)
-            .orderBy(sortBy, sortType)
+            .join("sadhsangat as SG", "SG.id", "=", "SD.sId")
+            .where("SG.unitNo", "=", unitId);
+
+            if(searchString.trim()) {
+              query.where("SG.name", "like", `%${searchString}%`);
+            }
+
+            finalResult.data = await query.orderBy(sortBy, sortType)
             .limit(limit)
             .offset(offset);
-          redisClient.setex(cacheKey, 3600, JSON.stringify(finalResult.data)); // Cache for 1 hour
-          const countResult = await getSewadalRecordsCount(unitId);
+          const countResult = await getSewadalRecordsCount(unitId, searchString);
           if (countResult) finalResult.count = countResult.count;
+          redisClient.setex(cacheKey, 3600, JSON.stringify(finalResult)); // Cache for 1 hour
           resolve(finalResult);
         } catch (error) {
           reject(error);
@@ -95,11 +103,15 @@ const deleteSewadal = async (id: number): Promise<boolean> => {
   return result > 0;
 };
 
-const getSewadalRecordsCount = async (sID: number) => {
-  const record = await db("sewadal")
-    .where({ sID: sID })
-    .count<{ count: number }>("id as count")
-    .first();
+const getSewadalRecordsCount = async (unitId: number, searchString: string) => {
+  const query = db("sewadal as SD")
+    .join("sadhsangat as SG", "SG.id", "=", "SD.sId")
+    .where("SG.unitNo", "=", unitId);
+
+  if (searchString.trim()) {
+    query.where("SG.name", "like", `%${searchString}%`);
+  }
+  const record = await query.count<{ count: number }>("SD.id as count").first();
   return record;
 };
 

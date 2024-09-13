@@ -6,71 +6,40 @@ const router = Router();
 /**
  * @swagger
  * /sewadal:
- *   post:
- *     tags:
- *       - Sewadal
- *     summary: Create a new Sewadal record
- *     description: Creates a new Sewadal record in the database.
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               sID:
- *                 type: integer
- *               personalNo:
- *                 type: integer
- *               sewadalNo:
- *                 type: string
- *               recruitmentDate:
- *                 type: string
- *                 format: date
- *             required:
- *               - sID
- *               - recruitmentDate
- *     responses:
- *       201:
- *         description: Record inserted successfully
- *       500:
- *         description: Internal Server Error
- */
-router.post('/', sewadalController.createSewadal);
-
-/**
- * @swagger
- * /sewadal:
  *   get:
  *     tags:
  *       - Sewadal
  *     summary: Fetch Sewadal records
  *     description: Retrieve Sewadal records from the database with pagination and sorting.
  *     parameters:
- *       - name: sID
+ *       - name: unitNo
  *         in: query
  *         required: true
- *         description: Sadhsangat ID to filter the records
+ *         description: Unit Id
  *         schema:
  *           type: integer
+ *           default: 1
  *       - name: pageNo
  *         in: query
  *         required: true
  *         description: Page number for pagination
  *         schema:
  *           type: integer
+ *           default: 1
  *       - name: limit
  *         in: query
  *         required: true
  *         description: Number of records per page
  *         schema:
  *           type: integer
+ *           default: 10
  *       - name: sortBy
  *         in: query
  *         required: true
  *         description: Sort By column
  *         schema:
  *           type: string
+ *           default: name
  *       - name: sortType
  *         in: query
  *         required: true
@@ -137,7 +106,7 @@ router.post('/', sewadalController.createSewadal);
  *       500:
  *         description: Internal Server Error
  */
-router.get('/', sewadalController.fetchSewadal);
+router.get('/sewadal', sewadalController.fetchSewadal);
 
 /**
  * @swagger
@@ -178,7 +147,7 @@ router.get('/', sewadalController.fetchSewadal);
  *       500:
  *         description: Internal Server Error
  */
-router.get('/:id', sewadalController.fetchSewadalById);
+router.get('/sewadal/:id', sewadalController.fetchSewadalById);
 
 /**
  * @swagger
@@ -217,7 +186,7 @@ router.get('/:id', sewadalController.fetchSewadalById);
  *       500:
  *         description: Internal Server Error
  */
-router.put('/:id', sewadalController.updateSewadal);
+router.put('/sewadal/:id', sewadalController.updateSewadal);
 
 /**
  * @swagger
@@ -242,6 +211,6 @@ router.put('/:id', sewadalController.updateSewadal);
  *       500:
  *         description: Internal Server Error
  */
-router.delete('/:id', sewadalController.deleteSewadal);
+router.delete('/sewadal/:id', sewadalController.deleteSewadal);
 
 export default router;
