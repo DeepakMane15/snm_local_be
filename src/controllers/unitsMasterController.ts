@@ -32,6 +32,7 @@ const fetchAllUnits = async (req: Request, res: Response) => {
     logger.info(`Fetching Unit record by id IN`);
     const pageNo = parseInt(req.query.pageNo as string, 10);
     const limit = parseInt(req.query.limit as string, 10);
+    const searchString = (req.query.searchString as string) || "";
     const sortBy =
       (req.query.sortBy as UnitMasterSortBy) || UnitMasterSortBy.name;
     const sortType = (req.query.sortType as SortType) || SortType.asc;
@@ -39,7 +40,8 @@ const fetchAllUnits = async (req: Request, res: Response) => {
       pageNo,
       limit,
       sortBy,
-      sortType
+      sortType,
+      searchString
     );
     logger.info(`Fetching Unit record by id OUT`);
     res

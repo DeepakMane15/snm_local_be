@@ -10,8 +10,8 @@ const insertUnit = async (unitData: UnitsMasterDataModel) => {
   return await db("units_master").insert(unitData);
 };
 
-const getUnits = async (pageNo: number, limit: number, sortBy: UnitMasterSortBy, sortType: SortType): Promise<GetUnitsMasterResultModel> => {
-  let cacheKey = `${RedisKeysConstant.Unit}:${pageNo}:${limit}:${sortBy}:${sortType}`;
+const getUnits = async (pageNo: number, limit: number, sortBy: UnitMasterSortBy, sortType: SortType, searchString: string): Promise<GetUnitsMasterResultModel> => {
+  let cacheKey = `${RedisKeysConstant.Unit}:${pageNo}:${limit}:${sortBy}:${sortType}:${searchString}`;
   return new Promise((resolve, reject) => {
     redisClient.get(cacheKey, async (err, cachedData) => {
       if (err) return reject(err);
@@ -22,12 +22,17 @@ const getUnits = async (pageNo: number, limit: number, sortBy: UnitMasterSortBy,
         try {
           const offset = (pageNo - 1) * limit;
           let units = new GetUnitsMasterResultModel();
-          units.data = await db("units_master")
-          .select("*")
-          .orderBy(sortBy, sortType)
+          let query = db("units_master")
+          .select("*");
+
+          if(searchString.trim()) {
+            query.where("name", "like", `%${searchString}%`);
+          }
+          units.data = await query.orderBy(sortBy, sortType)
           .limit(limit)
           .offset(offset);
-          const countResult = await getUnitsRecordsCount();
+
+          const countResult = await getUnitsRecordsCount(searchString);
           if(countResult)
             units.count = countResult.count;
           redisClient.setex(cacheKey, 3600, JSON.stringify(units)); // Cache for 1 hour
@@ -45,9 +50,12 @@ const getUnitById = async (id: number) => {
   return await db("units_master").where({ id }).first();
 };
 
-const getUnitsRecordsCount = async () => {
-  const record = await db("units_master")
-  .count<{count: number}>("id as count")
+const getUnitsRecordsCount = async (searchString: string) => {
+  let query = db("units_master");
+  if (searchString.trim()) {
+    query.where("name", "like", `%${searchString}%`);
+  }
+  const record = await query.count<{count: number}>("id as count")
   .first();
   return record;
 };

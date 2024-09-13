@@ -14,7 +14,7 @@ import {
 import { deleteKeysWithPrefix } from "./redisService";
 
 const createSadhsangat = async (sadhsangatData: SadhsangatInputDataModel) => {
-  const {
+  let {
     name,
     unitNo,
     area,
@@ -37,6 +37,10 @@ const createSadhsangat = async (sadhsangatData: SadhsangatInputDataModel) => {
   } = sadhsangatData;
 
   const age = 20;
+
+  if(!unitNo || unitNo === 0) {
+    unitNo = 1;
+  }
 
   // Delete the keys here
   await deleteKeysWithPrefix(`${RedisKeysConstant.Sadhsangat}:`);
@@ -100,7 +104,6 @@ const createSadhsangat = async (sadhsangatData: SadhsangatInputDataModel) => {
         members.map(async (member: SadhsangatMemberInputDataModel) => {
           const {
             name,
-            unitNo,
             contactNo,
             gender,
             dob,
