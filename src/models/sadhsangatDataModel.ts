@@ -24,3 +24,23 @@ export class GetSadhsangatResultModel {
   public data: Partial<SadhsangatDataModel[]> = [];
   public count: number = 0;
 }
+
+export interface SadhsangatMemberInputDataModel extends SewadalDataModel {
+  name: string;
+  unitNo: number;
+  contactNo: string;
+  gender: number;
+  dob: Date;
+  qualification: string;
+  occupation: string;
+  dateOfGyan: Date;
+  bloodGroup: string;
+  familyId: number;
+  isSewadal: boolean;
+}
+export interface SadhsangatInputDataModel extends SadhsangatMemberInputDataModel{
+  area: string;
+  address: string;
+  pincode: string;
+  members: SadhsangatMemberInputDataModel[];
+}

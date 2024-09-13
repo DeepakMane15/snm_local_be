@@ -10,7 +10,6 @@ const validateSadhsangat = [
     body('contactNo').isLength({ min: 1 }).withMessage('Contact Number is required'),
     body('gender').isInt().withMessage('Gender is required and must be an integer'),
     body('dob').isDate().withMessage('Date of Birth must be a valid date'),
-    body('age').isInt().withMessage('Age is required and must be an integer'),
     body('qualification').isString().notEmpty().withMessage('Qualification is required'),
     body('occupation').isString().notEmpty().withMessage('Occupation is required'),
     body('dateOfGyan').isDate().withMessage('Date of Gyan must be a valid date'),

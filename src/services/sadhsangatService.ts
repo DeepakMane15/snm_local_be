@@ -1,6 +1,8 @@
 import {
   GetSadhsangatResultModel,
   SadhsangatDataModel,
+  SadhsangatInputDataModel,
+  SadhsangatMemberInputDataModel,
 } from "../models/sadhsangatDataModel";
 import db from "../db/knex"; // Adjust path to knex.ts
 import redisClient from "../config/redis";
@@ -11,7 +13,7 @@ import {
 } from "../common/AppEnum";
 import { deleteKeysWithPrefix } from "./redisService";
 
-const createSadhsangat = async (sadhsangatData: SadhsangatDataModel) => {
+const createSadhsangat = async (sadhsangatData: SadhsangatInputDataModel) => {
   const {
     name,
     unitNo,
@@ -21,7 +23,6 @@ const createSadhsangat = async (sadhsangatData: SadhsangatDataModel) => {
     contactNo,
     gender,
     dob,
-    age,
     qualification,
     occupation,
     dateOfGyan,
@@ -31,41 +32,18 @@ const createSadhsangat = async (sadhsangatData: SadhsangatDataModel) => {
     personalNo,
     sewadalNo,
     recruitmentDate,
-    badgeBeltDate
+    badgeBeltDate,
+    members,
   } = sadhsangatData;
 
-  // delete the keys here
+  const age = 20;
+
+  // Delete the keys here
   await deleteKeysWithPrefix(`${RedisKeysConstant.Sadhsangat}:`);
   await deleteKeysWithPrefix(`${RedisKeysConstant.Sewadal}:`);
 
-
-  // return db.raw(
-  //   `
-  //       CALL InsertIntoSadhsangat(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
-  //   `,
-  //   [
-  //     name,
-  //     unitNo,
-  //     area,
-  //     address,
-  //     pincode,
-  //     contactNo,
-  //     gender,
-  //     dob,
-  //     age,
-  //     qualification,
-  //     occupation,
-  //     dateOfGyan,
-  //     bloodGroup,
-  //     familyId,
-  //     isSewadal ? 1 : 0,
-  //     personalNo,
-  //     sewadalNo,
-  //     recruitmentDate,
-  //   ]
-  // );
   try {
-    return db.transaction(async (trx) => {
+    return await db.transaction(async (trx) => {
       let insertedFamilyId = familyId;
 
       // Insert into sadhsangat table
@@ -113,17 +91,68 @@ const createSadhsangat = async (sadhsangatData: SadhsangatDataModel) => {
           personalNo,
           sewadalNo,
           recruitmentDate,
-          badgeBeltDate
+          badgeBeltDate,
         });
       }
+
+      // Insert members
+      await Promise.all(
+        members.map(async (member: SadhsangatMemberInputDataModel) => {
+          const {
+            name,
+            unitNo,
+            contactNo,
+            gender,
+            dob,
+            qualification,
+            occupation,
+            dateOfGyan,
+            bloodGroup,
+            isSewadal,
+            personalNo,
+            sewadalNo,
+            recruitmentDate,
+            badgeBeltDate,
+          } = member;
+
+          // Insert member into sadhsangat table
+          await trx("sadhsangat").insert({
+            name,
+            address,area,pincode,
+            unitNo,
+            contactNo,
+            gender,
+            dob,
+            age,
+            qualification,
+            occupation,
+            dateOfGyan,
+            bloodGroup,
+            familyId: insertedFamilyId, // use updated familyId
+          });
+
+          // Handle isSewadal condition for members
+          if (isSewadal) {
+            await trx("sewadal").insert({
+              sId: insertedId,
+              personalNo,
+              sewadalNo,
+              recruitmentDate,
+              badgeBeltDate,
+            });
+          }
+        })
+      );
 
       // Return the ID of the inserted sadhsangat record
       return insertedId;
     });
   } catch (error) {
-    console.log(error);
+    console.error("Error during Sadhsangat creation:", error);
+    throw error; // Optionally rethrow the error if needed
   }
 };
+
 
 const getSadhsangat = async (
   unitNo: number,
@@ -152,7 +181,7 @@ const getSadhsangat = async (
           // Calculate offset based on the current page number and limit
           const offset = (pageNo - 1) * limit;
           //   result = await db.raw(`CALL GetSadhsangat(?);`, [id]);
-          const query =  db("sadhsangat as S")
+          const query = db("sadhsangat as S")
             .select(
               "S.*",
               "units_master.unitNo as unitNo",
@@ -165,18 +194,21 @@ const getSadhsangat = async (
             .leftJoin("units_master", "S.unitNo", "=", "units_master.id")
             .where("S.unitNo", "=", unitNo);
 
-            if (searchString.trim()) {
-              query.where("S.name", "like", `%${searchString}%`);
-            }
+          if (searchString.trim()) {
+            query.where("S.name", "like", `%${searchString}%`);
+          }
 
-            finalResult.data = await query
+          finalResult.data = await query
             .orderBy(sortBy, sortType)
             .limit(limit)
             .offset(offset);
 
-            const countResult = await getSadhsangatRecordsCount(unitNo,searchString);
-            if (countResult) finalResult.count = countResult.count;
-            redisClient.setex(cacheKey, 3600, JSON.stringify(finalResult)); // Cache for 1 hour
+          const countResult = await getSadhsangatRecordsCount(
+            unitNo,
+            searchString
+          );
+          if (countResult) finalResult.count = countResult.count;
+          redisClient.setex(cacheKey, 3600, JSON.stringify(finalResult)); // Cache for 1 hour
           resolve(finalResult);
         } catch (error) {
           reject(error);
@@ -225,15 +257,16 @@ const deleteSadhsangat = async (id: number): Promise<boolean> => {
   return result > 0;
 };
 
-const getSadhsangatRecordsCount = async (unitNo: number,searchString: string) => {
-  const query = db("sadhsangat")
-    .where({ unitNo: unitNo })
+const getSadhsangatRecordsCount = async (
+  unitNo: number,
+  searchString: string
+) => {
+  const query = db("sadhsangat").where({ unitNo: unitNo });
 
-    if(searchString.trim()) {
-      query.where("name", "like", `%${searchString}%`);
-    }
-    const record = await query.count<{ count: number }>("id as count")
-    .first();
+  if (searchString.trim()) {
+    query.where("name", "like", `%${searchString}%`);
+  }
+  const record = await query.count<{ count: number }>("id as count").first();
   return record;
 };
 

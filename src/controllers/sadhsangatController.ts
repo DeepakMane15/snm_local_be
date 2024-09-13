@@ -1,13 +1,13 @@
 import { Request, Response } from 'express';
 import sadhsangatService from '../services/sadhsangatService';
 import logger from '../utils/winston';
-import { GetSadhsangatResultModel, SadhsangatDataModel } from '../models/sadhsangatDataModel';
+import { GetSadhsangatResultModel, SadhsangatDataModel, SadhsangatInputDataModel } from '../models/sadhsangatDataModel';
 import { SortType, UnitMasterSortBy } from '../common/AppEnum';
 
 const createSadhsangat = async (req: Request, res: Response) => {
     try {
         logger.info(`Create Sadhsangat record IN`);
-        const sadhsangatData = req.body as SadhsangatDataModel;
+        const sadhsangatData = req.body as SadhsangatInputDataModel;
         const result = await sadhsangatService.createSadhsangat(sadhsangatData);
         logger.info(`Create Sadhsangat record OUT`);
         res.status(201).json({ message: 'Record inserted successfully', id: result[0] });
